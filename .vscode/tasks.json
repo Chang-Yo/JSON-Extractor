@@ -1,0 +1,33 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "cmake-build-debug",
+            "type": "shell",
+            "command": "cmake --build build",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}" // VS Code 推荐使用 ${workspaceFolder} 替代 ${workspaceRoot}
+                ],
+                "pattern": {
+                    // 正则表达式: 捕获 文件名:行号:列号: 严重性: 消息
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1, // $1: 文件名
+                    "line": 2, // $2: 行号
+                    "column": 3, // $3: 列号
+                    "severity": 4, // $4: 严重性 (warning/error)
+                    "message": 5 // $5: 错误或警告消息
+                }
+            }
+        }
+    ]
+}

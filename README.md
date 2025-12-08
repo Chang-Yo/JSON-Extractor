@@ -1,49 +1,28 @@
-# JSON Subgraph Extractor
+# JSON-Extractor
+任务要求见`request.md`文档，建议使用能够**支持mermaid解析**的markdown预览工具来预览
 
-This tool extracts subgraphs from JSON files representing a graph structure.
-
-## Build Instructions
-
-### Prerequisites
-- C++17 compiler (g++, clang++)
-- CMake 3.10+
-
-### Build Steps
-1. Create a build directory:
-   ```bash
-   mkdir build
-   cd build
-   ```
-2. Run CMake:
-   ```bash
-   cmake ..
-   ```
-3. Build the project:
-   ```bash
-   make
-   ```
-
-## Usage
-
-The executable `mytool` will be created in the `build` directory.
-
-```bash
-./mytool <target_path> <m1> <m2> [ignored_attributes...]
+# 项目结构树🌳
+```plaintext
+workspace
+|
+|-- request.md           //题目详细要求
+|
+|-- README.md            //项目介绍
+|
+|-- CMakeLists.txt
+|
+|-- src/                 //存放cpp源代码
+|
+|
+|-- include/             //存放头文件
+|
+|
+|-- test/                //存放测试用例
+|
+|-- .gitignore
+|
+|--build/
 ```
 
-- `<target_path>`: Path to a JSON file or a directory containing JSON files.
-- `<m1>`: Upper bound for the number of nodes in the subgraph.
-- `<m2>`: Lower bound for the number of nodes in the subgraph.
-- `[ignored_attributes...]`: (Optional) A list of attribute names to ignore when building graph connections.
-
-### Examples
-
-- Process a single file, extracting subgraphs with 5 to 6 nodes:
-  ```bash
-  ./mytool ../data.json 6 5
-  ```
-
-- Process all JSON files in a directory, ignoring the 'z' attribute, extracting subgraphs with 5 to 10 nodes:
-  ```bash
-  ./mytool ../data_dir 10 5 z
-  ```
+# 环境准备
+llvm toolchain >=20.0

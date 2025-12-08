@@ -1,4 +1,3 @@
-/build
-/libs
-/main.cpp
-/CmakeLists.txt
+bin/
+build/
+.cache/
