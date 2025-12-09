@@ -1,0 +1,1 @@
+/usr/bin/clang++ -fPIC -g -shared -Wl,-soname,libLib.so -o libLib.so CMakeFiles/Lib.dir/src/test.cpp.o 
