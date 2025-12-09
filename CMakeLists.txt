@@ -15,13 +15,11 @@ add_executable(executable
     src/main.cpp
 )
 
-add_library(Lib SHARED  
-    src/test.cpp    
+target_include_directories(executable
+    PUBLIC 
+    ${PROJECT_SOURCE_DIR}/include    
 )
 
-target_include_directories(Lib 
-    PUBLIC
-    ${PROJECT_SOURCE_DIR}/include
-)
 
-target_link_libraries(executable Lib)
+
+target_link_libraries(executable )

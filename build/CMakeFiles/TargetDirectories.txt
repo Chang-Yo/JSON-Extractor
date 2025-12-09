@@ -1,4 +1,0 @@
-/home/changyo/JSON-Extracor/build/CMakeFiles/executable.dir
-/home/changyo/JSON-Extracor/build/CMakeFiles/Lib.dir
-/home/changyo/JSON-Extracor/build/CMakeFiles/edit_cache.dir
-/home/changyo/JSON-Extracor/build/CMakeFiles/rebuild_cache.dir

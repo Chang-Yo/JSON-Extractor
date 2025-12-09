@@ -232,7 +232,7 @@ graph LR
     B[tibber-query] 
     C[Price Reciever]
     D[Setpoint]
-    E[Heat capacity]
+    E[Heat capacitor]
     F[Adjust setpoint]
     G[Set temperature]
     
@@ -255,7 +255,7 @@ graph LR
 - 注意1：所有结点均通过id进行连接；我们忽略未在当前文件中定义的结点。
 - 注意2：图中可能存在环。
 
-图形如下：
+图形示例如下：
 
 ```mermaid
 graph LR
@@ -280,13 +280,13 @@ graph LR
     end
 
     subgraph  Undirected
-    G --- A 
-    G --- B
-    G --- C
-    G --- H
-    G --- D
-    G --- E
-    G --- F
+    G -- z --- A 
+    G -- z --- B
+    G -- z --- C
+    G -- z --- H
+    G -- z --- D
+    G -- z --- E
+    G -- z --- F
     end
 
     subgraph  
@@ -470,10 +470,10 @@ graph LR
 ## 扩展功能：
 用户可以指定1个或者多个属性名，则在计算过程中，不构建该属性相关的连接，例如，用户指定 z ，则提取子图过程中，不考虑 z 属性产生的连接关系。
 
----
-
 ## 输出文件要求：
 如果输入文件为`abc.json`，则输出文件为同一目录下的一组文件：`module_abc_z_5_2.json`，代表`abc.json`文件中，不考虑z属性，结点数量为5，第2个满足上述需求的模块文件。
+
+---
 
 你的工具至少支持如下执行命令：
 - `mytool <目标目录地址> [<下界>, <上界>]  [<指定0个或者多个标签>]` 
