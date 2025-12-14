@@ -1,15 +1,17 @@
 #include "IOprocess.h"
+#include "json.hpp"
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <string>
 
-classfication classify(int argc, char **argv) {
+classfication classify(int argc, char **argv, const string path) {
   if (argc < 4)
     return classfication::other;
 
-  filesystem::path target_path(argv[1]);
+  filesystem::path target_path(path);
   bool with_ignored_property =
       (argc >= 5); // 通过参数的个数来判断是否有需要忽略的属性
 
@@ -28,15 +30,43 @@ classfication classify(int argc, char **argv) {
 string GenerateModuleFilename(const string &origin_filename, int node_count,
                               int module_index) {
   int dot_pos = origin_filename.find_last_of('.');
+  int slash_pos = origin_filename.find_last_of('/');
+  string file_base_dir = origin_filename.substr(0, slash_pos);
+  string basename =
+      origin_filename.substr(slash_pos + 1, dot_pos - slash_pos - 1);
+  ostringstream output_filename;
+  output_filename << file_base_dir << "/module_" << basename << "_"
+                  << node_count << "_" << module_index << ".json";
+  return output_filename.str();
+}
+
+string GenerateModuleFilename(const string &origin_filename, int node_count,
+                              int module_index,
+                              vector<string> &ignored_properties) {
+  int dot_pos = origin_filename.find_last_of('.');
   string basename = origin_filename.substr(0, dot_pos);
   ostringstream output_filename;
-  output_filename << "module_" << basename << "_" << node_count << "_"
-                  << module_index << ".json";
+
+  // 如果有忽略属性，在文件名中添加标记
+  if (!ignored_properties.empty()) {
+    output_filename << "module_" << basename << "_";
+    // 添加所有忽略属性，用下划线连接
+    for (size_t i = 0; i < ignored_properties.size(); i++) {
+      if (i > 0)
+        output_filename << "_";
+      output_filename << ignored_properties[i];
+    }
+    output_filename << "_" << node_count << "_" << module_index << ".json";
+  } else {
+    output_filename << "module_" << basename << "_" << node_count << "_"
+                    << module_index << ".json";
+  }
+
   return output_filename.str();
 }
 
 void CreateModuleFile(vector<string> &target_id_set, json &j,
-                      const string output_file_name) {
+                      string &output_file_name) {
   if (target_id_set.empty()) {
     cerr << "There is no qualified subgraph" << endl;
     return;
@@ -56,6 +86,7 @@ void CreateModuleFile(vector<string> &target_id_set, json &j,
     cerr << "cannot open the file: " << output_file_name << endl;
     return;
   }
+  cout << "The file was created as: " << output_file_name << endl;
   ofs << setw(4) << output_array;
   ofs.close();
   return;

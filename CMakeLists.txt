@@ -12,13 +12,15 @@ endif()
 add_executable(tool 
     src/main.cpp
 )
-add_library(Lib
-    src/corealgor.cpp
-    src/IOprocess.cpp    
+
+add_library(Lib SHARED
+    src/CoreAlgor.cpp
+    src/IOprocess.cpp
 )
 
-
-target_include_directories(Lib PUBLIC
+target_include_directories(Lib
+    PUBLIC 
     ${PROJECT_SOURCE_DIR}/include
 )
 target_link_libraries(tool Lib)
+

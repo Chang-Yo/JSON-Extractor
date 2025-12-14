@@ -16,13 +16,16 @@ using json = nlohmann::json;
 void HandleSingleFile(string &file_path, int down_realm, int up_realm);
 void HandleDirectory(string &directory_path, int down_realm, int up_realm);
 // 考虑到是否含有需要忽略的属性
-void HandleSingleFile(string &file_path, int down_realm, int up_realm,
+void HandleSingleFile(string &file_path, int down_realm, int up_realm, int argc,
                       char **argv);
 void HandleDirectory(string &directory_path, int down_realm, int up_realm,
-                     char **argv);
+                     int argc, char **argv);
 
 // 数据结构化
 vector<list<string>> Graphicalize(json &j);
 vector<list<string>> Graphicalize(json &j, vector<string> &ignored_properties);
 // 寻找强连通分量
-vector<string> FindSubgraph(vector<list<string>> &);
+vector<string> FindSubgraph(vector<list<string>> &, int target_size);
+vector<vector<string>> FindAllSubgraphs(vector<list<string>> &,
+                                        vector<string> &id_to_index,
+                                        int target_size);
