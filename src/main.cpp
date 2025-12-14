@@ -1,57 +1,57 @@
-#include "json.hpp"
-#include <exception>
-#include <fstream>
+#include "CoreAlgor.h"
+#include "IOprocess.h"
 #include <iostream>
-#include <string>
-
-using json = nlohmann::json;
 using namespace std;
-const string BASIC_PATH_PREFIX = "../test/";
-
-void parse_file_example() {
-  const string FILE_PATH = "../test/1.json";
-  ifstream input_file(FILE_PATH);
-  if (!input_file.is_open()) {
-    cerr << "ERROR: Can't open the file: \"" << FILE_PATH
-         << "\". Please check the file path again" << endl;
-    return;
-  }
-
-  try {
-    json data;
-    input_file >> data;
-
-    if (!data.is_array()) {
-      cerr << "ERROR: JSON file is not a array!" << endl;
-      return;
-    }
-
-    cout << "The file <" << FILE_PATH << "> contains" << data.size()
-         << " nodes." << endl;
-    for (const auto &node : data) {
-      if (node.is_object()) {
-        string id = node.at("id").get<string>();
-        cout << "\n -----File Parsing-----\n";
-        cout << "Node ID:\t " << id << endl;
-
-        if (node.find("name") != node.end()) {
-          string name = node.at("name").get<string>();
-          cout << "Node name:\t " << name << endl;
-        }
-      }
-    }
-  } catch (const json::parse_error &e) {
-    cerr << "JSON Parse ERROR!" << e.what() << " (Location: " << e.byte << ")"
-         << endl;
-  } catch (const exception &e) {
-    cerr << "Running ERROR!" << e.what() << endl;
-  }
-}
-
-void parse_multi_files();
+// 由于tool是在build文件夹下调用的，所以我们需要加上路径前缀
+const string path_base_name = "../";
 
 int main(int argc, char *argv[]) {
-  parse_file_example();
+  cout << "===================================================" << endl;
+  cout << "⚠️⚠️我们已在代码中处理了输入路径问题，请在输入时以*项目目录*"
+          "为根目录。从而确定您的输入路径"
+       << endl;
+  cout << "===================================================" << endl;
 
+  if (argc <= 3) {
+    cerr << "Please input the right argument!!" << endl;
+    cerr << "<======Example======>" << endl;
+    cerr << "./tool FileOrDirectory down_realm up_realm [Optional: several "
+            "properties]"
+         << endl;
+    return 1;
+  }
+
+  // 调用分类器，根据处理目标和是否含有忽略参数来将处理分成4类
+  classfication category = classify(argc, argv);
+
+  // 读取共同含有基本信息：文件/目录路径，上界，下届
+  string path = path_base_name + argv[1];
+  int down_realm = stoi(argv[2]);
+  int up_realm = stoi(argv[3]);
+
+  // 根据分类结果来分别处理
+  switch (category) {
+  case classfication::directory:
+    cout << "⭐⭐⭐⭐=>Detect the directory: \"" << path << "\"" << endl;
+    HandleDirectory(path, down_realm, up_realm);
+    break;
+  case classfication::single_file:
+    cout << "⭐⭐⭐⭐=>Detect the single file: \"" << path << "\"" << endl;
+    HandleSingleFile(path, down_realm, up_realm);
+    break;
+  case classfication::directory_with_ignored_property:
+    cout << "⭐⭐⭐⭐=>Detect the directory: \"" << path << "\"" << endl;
+    cout << "⭐⭐⭐⭐=>Also find the extra arguments!" << endl;
+    HandleDirectory(path, down_realm, up_realm, argv);
+    break;
+  case classfication::single_file_with_ignored_property:
+    cout << "⭐⭐⭐⭐=>Detect the single file: \"" << path << "\"" << endl;
+    cout << "⭐⭐⭐⭐=>Also find the extra arguments!" << endl;
+    HandleSingleFile(path, down_realm, up_realm, argv);
+    break;
+  default:
+    cout << "！！！！=>Invalid arguments." << endl;
+    break;
+  }
   return 0;
 }
