@@ -5,7 +5,7 @@
             "name": "(GDB) Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/executable",
+            "program": "${workspaceFolder}/build/tool",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
@@ -30,8 +30,12 @@
             "name": "(CodeLLDB) Debug",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/build/executable",
-            "args": [],
+            "program": "${workspaceFolder}/build/tool",
+            "args": [
+                "test/test.json",
+                "5",
+                "6"
+            ],
             "cwd": "${workspaceFolder}/build",
             "terminal": "integrated",
             "preLaunchTask": "cmake-build-debug",

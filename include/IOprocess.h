@@ -6,6 +6,7 @@
 */
 #pragma once
 #include "json.hpp"
+#include <list>
 #include <string>
 #include <vector>
 using namespace std;
@@ -30,3 +31,4 @@ string GenerateModuleFilename(const string &origin_filename, int node_count,
 // 创建输出文件
 
 void CreateModuleFile(vector<string> &, json &, string &);
+void PrintGraph(vector<list<string>> &graph);

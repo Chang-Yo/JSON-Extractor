@@ -44,7 +44,10 @@ string GenerateModuleFilename(const string &origin_filename, int node_count,
                               int module_index,
                               vector<string> &ignored_properties) {
   int dot_pos = origin_filename.find_last_of('.');
-  string basename = origin_filename.substr(0, dot_pos);
+  int slash_pos = origin_filename.find_last_of('/');
+  string file_base_dir = origin_filename.substr(0, slash_pos);
+  string basename =
+      origin_filename.substr(slash_pos + 1, dot_pos - slash_pos - 1);
   ostringstream output_filename;
 
   // 如果有忽略属性，在文件名中添加标记
@@ -90,4 +93,13 @@ void CreateModuleFile(vector<string> &target_id_set, json &j,
   ofs << setw(4) << output_array;
   ofs.close();
   return;
+}
+
+void PrintGraph(vector<list<string>> &graph) {
+  for (auto &list : graph) {
+    for (auto &node : list) {
+      cout << node << "-->";
+    }
+    cout << "[END]" << endl;
+  }
 }
