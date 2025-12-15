@@ -3,14 +3,21 @@
 ==> 读取调用参数，实现分类器功能
 ==> 生成需要输出的文件名称
 ==> 生成输出文件
+==> 输出图状结构方便调试
 */
 #pragma once
 #include "json.hpp"
 #include <list>
 #include <string>
+#include <unordered_map>
 #include <vector>
+
 using namespace std;
 using json = nlohmann::json;
+
+// 调用CoreAlgor.cpp中定义的全局变量
+extern vector<string> id_to_index;
+extern unordered_map<string, int> id_map;
 
 // 定义五种类别
 enum class classfication {
@@ -20,15 +27,19 @@ enum class classfication {
   directory_with_ignored_property,
   other
 };
+
 // 分类器
 classfication classify(int argc, char *argv[], const string path);
+
 // 生成输出文件名
-string GenerateModuleFilename(const string &origin_filename, int node_count,
-                              int module_index);
 string GenerateModuleFilename(const string &origin_filename, int node_count,
                               int module_index,
                               vector<string> &ignored_properties);
-// 创建输出文件
 
+// 创建输出文件
 void CreateModuleFile(vector<string> &, json &, string &);
+
+// 输出图状结构
 void PrintGraph(vector<list<string>> &graph);
+void PrintGraph(vector<vector<string>> &graph);
+void PrintGraph(vector<vector<int>> &graph);

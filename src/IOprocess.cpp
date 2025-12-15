@@ -6,7 +6,9 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
+// 分类器
 classfication classify(int argc, char **argv, const string path) {
   if (argc < 4)
     return classfication::other;
@@ -27,19 +29,7 @@ classfication classify(int argc, char **argv, const string path) {
     return classfication::other;
 }
 
-string GenerateModuleFilename(const string &origin_filename, int node_count,
-                              int module_index) {
-  int dot_pos = origin_filename.find_last_of('.');
-  int slash_pos = origin_filename.find_last_of('/');
-  string file_base_dir = origin_filename.substr(0, slash_pos);
-  string basename =
-      origin_filename.substr(slash_pos + 1, dot_pos - slash_pos - 1);
-  ostringstream output_filename;
-  output_filename << file_base_dir << "/module_" << basename << "_"
-                  << node_count << "_" << module_index << ".json";
-  return output_filename.str();
-}
-
+// 创建文件名
 string GenerateModuleFilename(const string &origin_filename, int node_count,
                               int module_index,
                               vector<string> &ignored_properties) {
@@ -52,13 +42,11 @@ string GenerateModuleFilename(const string &origin_filename, int node_count,
 
   // 如果有忽略属性，在文件名中添加标记
   if (!ignored_properties.empty()) {
-    output_filename << "module_" << basename << "_";
+    output_filename << "module_" << basename;
     // 添加所有忽略属性，用下划线连接
-    for (size_t i = 0; i < ignored_properties.size(); i++) {
-      if (i > 0)
-        output_filename << "_";
-      output_filename << ignored_properties[i];
-    }
+    for (auto &ignored_property : ignored_properties)
+      output_filename << "_" << ignored_property;
+
     output_filename << "_" << node_count << "_" << module_index << ".json";
   } else {
     output_filename << "module_" << basename << "_" << node_count << "_"
@@ -68,12 +56,9 @@ string GenerateModuleFilename(const string &origin_filename, int node_count,
   return output_filename.str();
 }
 
+// 创建并写入输出文件
 void CreateModuleFile(vector<string> &target_id_set, json &j,
                       string &output_file_name) {
-  if (target_id_set.empty()) {
-    cerr << "There is no qualified subgraph" << endl;
-    return;
-  }
   json output_array = json::array();
   for (int i = 0; i < target_id_set.size(); i++) {
     string target_id = target_id_set[i];
@@ -91,14 +76,40 @@ void CreateModuleFile(vector<string> &target_id_set, json &j,
   }
   cout << "The file was created as: " << output_file_name << endl;
   ofs << setw(4) << output_array;
+  cout << "......✅The module file was written successfully!" << endl;
   ofs.close();
   return;
 }
 
+// 打印输出图状结构
 void PrintGraph(vector<list<string>> &graph) {
-  for (auto &list : graph) {
-    for (auto &node : list) {
+  cout << "=== Graph Structure ===" << endl;
+  for (int i = 0; i < graph.size(); i++) {
+    // 获取当前节点的ID
+    string current_node_id = id_to_index[i];
+    cout << "[" << current_node_id << "] -->";
+
+    // 遍历邻接节点
+    for (const auto &neighbor_id : graph[i]) {
+      cout << neighbor_id << " -> ";
+    }
+    cout << "[END]" << endl;
+  }
+}
+
+void PrintGraph(vector<vector<string>> &all_subgraphs) {
+  for (auto &subgraph : all_subgraphs) {
+    for (auto &node : subgraph) {
       cout << node << "-->";
+    }
+  }
+  cout << "[END]" << endl;
+}
+
+void PrintGraph(vector<vector<int>> &components) {
+  for (auto &component : components) {
+    for (auto &node_id : component) {
+      cout << "[" << id_to_index[node_id] << "]-->";
     }
     cout << "[END]" << endl;
   }

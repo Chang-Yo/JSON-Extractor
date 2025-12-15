@@ -1,6 +1,8 @@
 #include "CoreAlgor.h"
 #include "IOprocess.h"
 #include <iostream>
+#include <string>
+#include <vector>
 using namespace std;
 // 由于tool是在build文件夹下调用的，所以我们需要加上路径前缀
 const string path_base_name = "../";
@@ -32,24 +34,37 @@ int main(int argc, char *argv[]) {
 
   // 根据分类结果来分别处理
   switch (category) {
-  case classfication::directory:
+  case classfication::directory: {
     cout << "⭐⭐⭐⭐=>Detect the directory: \"" << path << "\"" << endl;
-    HandleDirectory(path, down_realm, up_realm);
+    vector<string> None;
+    HandleDirectory(path, down_realm, up_realm, None);
     break;
-  case classfication::single_file:
+  }
+  case classfication::single_file: {
     cout << "⭐⭐⭐⭐=>Detect the single file: \"" << path << "\"" << endl;
-    HandleSingleFile(path, down_realm, up_realm);
+    vector<string> None;
+    HandleSingleFile(path, down_realm, up_realm, None);
     break;
-  case classfication::directory_with_ignored_property:
+  }
+  case classfication::directory_with_ignored_property: {
     cout << "⭐⭐⭐⭐=>Detect the directory: \"" << path << "\"" << endl;
     cout << "⭐⭐⭐⭐=>Also find the extra arguments!" << endl;
-    HandleDirectory(path, down_realm, up_realm, argc, argv);
+    vector<string> ignored_properties;
+    for (int i = 4; i < argc; i++)
+      ignored_properties.push_back(argv[i]);
+    HandleDirectory(path, down_realm, up_realm, ignored_properties);
     break;
-  case classfication::single_file_with_ignored_property:
+  }
+  case classfication::single_file_with_ignored_property: {
     cout << "⭐⭐⭐⭐=>Detect the single file: \"" << path << "\"" << endl;
     cout << "⭐⭐⭐⭐=>Also find the extra arguments!" << endl;
-    HandleSingleFile(path, down_realm, up_realm, argc, argv);
+    vector<string> ignored_properties;
+    for (int i = 4; i < argc; i++)
+      ignored_properties.push_back(argv[i]);
+    HandleSingleFile(path, down_realm, up_realm, ignored_properties);
     break;
+  }
+
   default:
     cout << "！！！！=>Invalid arguments." << endl;
     break;
