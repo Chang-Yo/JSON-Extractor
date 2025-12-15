@@ -165,41 +165,90 @@ vector<list<int>> ConvertGraphToIndices(const vector<list<string>> &graph_str) {
 vector<vector<string>>
 FindSelfContainedSubgraphs(const vector<list<string>> &graph_str,
                            int target_size) {
+
   int n = id_to_index.size();
+
+  // Quick Fail: If target size is larger than total nodes
+  if (target_size > n)
+    return {};
+
   vector<list<int>> graph = ConvertGraphToIndices(graph_str);
   vector<vector<string>> result;
 
-  // 使用组合算法生成所有可能的目标大小的节点集合
-  vector<int> current_combination;
-  GenerateCombinations(0, n, target_size, current_combination, graph, result);
+  // CALL THE NEW ITERATIVE FUNCTION
+  GenerateCombinations(n, target_size, graph, result);
 
+  // 此处可以保留result中连通的子图，如果想要获得可以不连通的自包含子图，请注释这一行
   CheckConnected(result, graph_str);
   return result;
 }
 
-/*<======== 生成所有组合并检查自包含性 ========>*/
-void GenerateCombinations(int start, int n, int k,
-                          vector<int> &current_combination,
-                          const vector<list<int>> &graph,
+/*<======== 生成所有组合并检查自包含性 (Iterative & Optimized) ========>*/
+// Optimized to avoid recursion and reduce overhead of set creation
+void GenerateCombinations(int n, int k, const vector<list<int>> &graph,
                           vector<vector<string>> &result) {
-  if (k == 0) {
-    // 当组合大小达到目标时，检查自包含性
-    unordered_set<int> subset(current_combination.begin(),
-                              current_combination.end());
-    if (IsSelfContained(subset, graph)) {
-      vector<string> subgraph;
-      for (int node_idx : current_combination) {
-        subgraph.push_back(id_to_index[node_idx]);
-      }
-      result.push_back(subgraph);
-    }
+  if (k <= 0 || k > n)
     return;
-  }
 
-  for (int i = start; i <= n - k; ++i) { // 上界为n-k是因为剩下节点规模不足
-    current_combination.push_back(i);
-    GenerateCombinations(i + 1, n, k - 1, current_combination, graph, result);
-    current_combination.pop_back();
+  // 1. Initialize the first combination: {0, 1, ..., k-1}
+  vector<int> indices(k);
+  std::iota(indices.begin(), indices.end(), 0);
+
+  // Optimization: Use a bool vector for O(1) lookup instead of unordered_set
+  // This avoids the overhead of hashing for every combination check
+  vector<bool> is_in_subset(n, false);
+
+  while (true) {
+    // A. Mark current nodes in the lookup table
+    for (int idx : indices) {
+      is_in_subset[idx] = true;
+    }
+
+    // B. Check Self-Contained logic inline for performance
+    bool self_contained = true;
+    for (int u : indices) {
+      for (int v : graph[u]) {
+        // If neighbor v is NOT in the current subset, it fails
+        if (!is_in_subset[v]) {
+          self_contained = false;
+          break;
+        }
+      }
+      if (!self_contained)
+        break;
+    }
+
+    // C. If valid, construct the result
+    if (self_contained) {
+      vector<string> subgraph;
+      subgraph.reserve(k);
+      for (int idx : indices) {
+        subgraph.push_back(id_to_index[idx]);
+      }
+      result.push_back(std::move(subgraph));
+    }
+
+    // D. Cleanup lookup table for next iteration
+    // (Only reset the ones we set to true to keep it O(K) instead of O(N))
+    for (int idx : indices) {
+      is_in_subset[idx] = false;
+    }
+
+    // E. Generate Next Combination (Lexicographical)
+    // Find the rightmost element that can be incremented
+    int i = k - 1;
+    while (i >= 0 && indices[i] == n - k + i) {
+      i--;
+    }
+
+    if (i < 0)
+      break; // All combinations generated
+
+    indices[i]++;
+    // Reset all subsequent indices
+    for (int j = i + 1; j < k; ++j) {
+      indices[j] = indices[j - 1] + 1;
+    }
   }
 }
 

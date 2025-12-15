@@ -84,7 +84,7 @@ void CreateModuleFile(vector<string> &target_id_set, json &j,
   }
   cout << "The file was created as: " << output_file_name << endl;
   ofs << setw(4) << output_array;
-  cout << "......✅The module file was written successfully!" << endl;
+  cout << "✅ ==>The module file was written successfully!" << endl;
   ofs.close();
   return;
 }

@@ -1,5 +1,7 @@
 # JSON-Extractor
-任务要求见`request.md`文档，建议使用能够**支持mermaid解析**的markdown预览工具来预览
+任务要求见`request.md`文档，建议使用能够**支持mermaid解析**的markdown预览工具来预览。
+
+**注意**：输出的`module_XXX.json`文件是**连通**的自包含子图！你可以在`CoreAlgor.cpp`第**182**行添加注释，以此获得包括不连通的自包含子图。
 
 # 项目结构树🌳
 ```plaintext

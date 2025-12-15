@@ -1,0 +1,10 @@
+[
+    {
+        "id": "first",
+        "wires": "second"
+    },
+    {
+        "id": "second",
+        "wires": "first"
+    }
+]

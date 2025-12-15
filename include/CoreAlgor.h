@@ -30,9 +30,7 @@ FindSelfContainedSubgraphs(const vector<list<string>> &graph_str,
 bool IsSelfContained(const unordered_set<int> &subset,
                      const vector<list<int>> &graph);
 vector<list<int>> ConvertGraphToIndices(const vector<list<string>> &graph_str);
-void GenerateCombinations(int start, int n, int k,
-                          vector<int> &current_combination,
-                          const vector<list<int>> &graph,
+void GenerateCombinations(int n, int k, const vector<list<int>> &graph,
                           vector<vector<string>> &result);
 
 // 检查子图连通性
