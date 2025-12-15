@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <list>
+#include <queue>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -18,8 +19,10 @@ void HandleSingleFile(string &file_path, int down_realm, int up_realm,
                       vector<string> &ignored_properties) {
   ifstream ifs(file_path);
   if (!ifs.is_open()) {
-    cerr << "Cannot open the file: " << file_path << endl
-         << "Please check the path!" << endl;
+    cerr << "-------------------------------------" << endl
+         << " 🔴 🔴 🔴 Cannot open the file: " << file_path << endl
+         << "Please check the path!" << endl
+         << "-------------------------------------" << endl;
     return;
   }
   json j;
@@ -28,40 +31,52 @@ void HandleSingleFile(string &file_path, int down_realm, int up_realm,
   // 收集所有节点ID，建立ID到索引的映射
   SetMapping(j);
 
+  // 检查一下json文件是否为空
+  if (!id_map.size()) {
+    cerr << "-------------------------------------" << endl
+         << " 🟨 🟨 ==> ATTENTION: The json file is empty !!" << endl
+         << "-------------------------------------" << endl;
+    return;
+  }
   // 最好检查一下是否存在对应的属性，但是我们可以将这一步直接放进
   // Graphicalize()函数中，如果不存在,就直接cerr报错,返回空数组就是了
   vector<list<string>> graph = Graphicalize(j, ignored_properties);
+
   if (graph.empty()) {
-    cerr << "Graphicalize the json file \"" << file_path << "\" failed!!!"
-         << endl
-         << "please check the file contents：" << file_path << "!" << endl;
+    cerr << "-------------------------------------" << endl
+         << " 🔴 🔴 🔴 Graphicalize the json file \"" << file_path
+         << "\" failed!!!" << endl
+         << "please check the file contents：" << file_path << "!" << endl
+         << "-------------------------------------" << endl;
     return;
   }
 
-  // 输出邻结表调试检查
-  PrintGraph(graph);
+  // PrintGraph(graph); // 输出邻结表调试检查
 
-  // 为每个目标节点数寻找所有可能的子图，all_subgraphs包含了所有的**自包含**的子图
-  vector<vector<string>> all_subgraphs = FindConnectedGraph(graph);
-
+  // 为每个目标节点数寻找所有可能的自包含子图
   for (int target_size = down_realm; target_size <= up_realm; target_size++) {
-    if (down_realm <= 0) { // 边界检查
-      cerr << "ERROR: The down realm cannot be lower than 1!!" << endl;
+    if (down_realm <= 0 || up_realm > id_map.size()) { // 边界检查
+      cerr << "-------------------------------------" << endl
+           << " 🔴 🔴 🔴 ERROR: The realm is wrong !!" << endl
+           << "-------------------------------------" << endl;
       break;
       return;
     }
-
+    // PrintProgressBar(target_size - down_realm + 1, up_realm - down_realm +
+    // 1);
+    vector<vector<string>> subgraphs_of_target_size =
+        FindSelfContainedSubgraphs(graph, target_size);
+    cout << endl;
     int index = 0;
-    for (auto &subgraph : all_subgraphs) {
-      if (subgraph.size() == target_size) {
-        string output_file_name = GenerateModuleFilename(
-            file_path, target_size, index++, ignored_properties);
-        CreateModuleFile(subgraph, j, output_file_name);
-      }
+    for (auto &subgraph : subgraphs_of_target_size) {
+      string output_file_name = GenerateModuleFilename(
+          file_path, target_size, ++index, ignored_properties);
+      CreateModuleFile(subgraph, j, output_file_name);
     }
 
     if (!index) { // 如果没有找到对应大小的子图
-      cout << "======>ATTENTION: We couldn't find thesubgraphs with size of [ "
+      cout << " 🟨 🟨 ===>ATTENTION: We couldn't find thesubgraphs with size "
+              "of [ "
            << target_size << " ] !" << endl;
     }
   }
@@ -82,13 +97,12 @@ void SetMapping(const json &j) {
 }
 
 /*<======== 建立邻接表表 ========>*/
+// 这个函数实现用图状结构来存储JSON文件中的结点，但同时需要考虑忽略的属性
+// 如果ignored_properties为空，说明没有需要忽略的属性，这样可以将两种情况合并处理
 vector<list<string>> Graphicalize(json &j, vector<string> &ignored_properties) {
-  // 这个函数实现用图状结构来存储JSON文件中的结点，但同时需要考虑忽略的属性
-  // 如果ignored_properties为空，说明没有需要忽略的属性，这样可以将两种情况合并处理
-  cout << "We have found the " << id_map.size() << "nodes!" << endl;
-
   vector<list<string>> graph(id_to_index.size());
 
+  cout << "We have found the " << id_map.size() << " nodes!" << endl;
   // 将忽略属性转换为集合以便快速查找
   unordered_set<string> ignored_set(ignored_properties.begin(),
                                     ignored_properties.end());
@@ -105,33 +119,18 @@ vector<list<string>> Graphicalize(json &j, vector<string> &ignored_properties) {
               ignored_set.end()) // 如果属性在ignored_set中找到则跳过
         continue;
 
-      if (it.value().is_string()) {
-        string value = it.value().get<string>();
-        for (auto &other_id : id_to_index) {
-          if (value.find(other_id)) {
-            // 如果在其他属性中找到了调用的其他节点，就建立联系
-            graph[current_index].push_back(other_id);
-          }
+      // 使用新的辅助函数从任意JSON值中提取节点ID
+      vector<string> found_ids = ExtractNodeIdsFromJsonValue(it.value());
+      for (const string &found_id : found_ids) {
+        // 避免自环和重复添加相同节点
+        if (found_id != current_id) {
+          graph[current_index].push_back(found_id);
         }
       }
     }
   }
 
   return graph;
-}
-
-/*<======== DFS遍历 ========>*/
-// 计算从节点start可达的所有节点（包括自己）
-void DFS(int start, const vector<list<int>> &graph,
-         unordered_set<int> &reachable, vector<bool> &visited) {
-  if (visited[start])
-    return;
-  visited[start] = true;
-  reachable.insert(start);
-
-  for (int neighbor : graph[start]) {
-    DFS(neighbor, graph, reachable, visited);
-  }
 }
 
 /*<======== 检查是否自包含 ========>*/
@@ -162,43 +161,115 @@ vector<list<int>> ConvertGraphToIndices(const vector<list<string>> &graph_str) {
   return graph;
 }
 
-/*<======== 寻找所有自包含子图 ========>*/
+/*<======== 寻找指定大小的自包含子图 ========>*/
 vector<vector<string>>
-FindConnectedGraph(const vector<list<string>> &graph_str) {
+FindSelfContainedSubgraphs(const vector<list<string>> &graph_str,
+                           int target_size) {
   int n = id_to_index.size();
   vector<list<int>> graph = ConvertGraphToIndices(graph_str);
-
-  // 预计算每个节点的可达集合
-  vector<unordered_set<int>> reachable_from(n);
-  for (int i = 0; i < n; i++) {
-    vector<bool> visited(n, false);
-    DFS(i, graph, reachable_from[i], visited);
-  }
-
-  // 使用位掩码枚举所有非空子集
   vector<vector<string>> result;
-  int total_subsets = (1 << n);
 
-  for (int mask = 1; mask < total_subsets; mask++) {
-    unordered_set<int> subset;
-    for (int i = 0; i < n; i++) {
-      if (mask & (1 << i)) { // 利用汇编的原理
-        subset.insert(i);
-      }
-    }
+  // 使用组合算法生成所有可能的目标大小的节点集合
+  vector<int> current_combination;
+  GenerateCombinations(0, n, target_size, current_combination, graph, result);
 
-    // 检查是否自包含
+  CheckConnected(result, graph_str);
+  return result;
+}
+
+/*<======== 生成所有组合并检查自包含性 ========>*/
+void GenerateCombinations(int start, int n, int k,
+                          vector<int> &current_combination,
+                          const vector<list<int>> &graph,
+                          vector<vector<string>> &result) {
+  if (k == 0) {
+    // 当组合大小达到目标时，检查自包含性
+    unordered_set<int> subset(current_combination.begin(),
+                              current_combination.end());
     if (IsSelfContained(subset, graph)) {
       vector<string> subgraph;
-      for (int idx : subset) {
-        subgraph.push_back(id_to_index[idx]);
+      for (int node_idx : current_combination) {
+        subgraph.push_back(id_to_index[node_idx]);
       }
-      // sort(subgraph.begin(), subgraph.end()); // 可选：排序以便于比较
       result.push_back(subgraph);
+    }
+    return;
+  }
+
+  for (int i = start; i <= n - k; ++i) { // 上界为n-k是因为剩下节点规模不足
+    current_combination.push_back(i);
+    GenerateCombinations(i + 1, n, k - 1, current_combination, graph, result);
+    current_combination.pop_back();
+  }
+}
+
+/*<======== 检查子图连通性并过滤result ========>*/
+void CheckConnected(vector<vector<string>> &result,
+                    const vector<list<string>> &graph_str) {
+  vector<vector<string>> connected_subgraphs;
+  for (auto &subgraph : result) {
+    if (IsConnected(subgraph, graph_str)) {
+      connected_subgraphs.push_back(subgraph);
+    }
+  }
+  result = connected_subgraphs;
+}
+
+/*<======== 辅助函数：检查单个子图是否连通（弱连通） ========>*/
+bool IsConnected(const vector<string> &subgraph_nodes,
+                 const vector<list<string>> &graph_str) {
+  if (subgraph_nodes.empty())
+    return false;
+  int n = subgraph_nodes.size();
+
+  // 构建局部ID到索引的映射
+  unordered_map<string, int> local_map;
+  for (int i = 0; i < n; ++i) {
+    local_map[subgraph_nodes[i]] = i;
+  }
+
+  // 构建局部有向图
+  vector<list<int>> local_graph(n);
+  for (const string &node : subgraph_nodes) {
+    int local_idx = local_map[node];
+    int global_idx = id_map[node]; // 假设id_map全局可用
+    for (const string &neigh : graph_str[global_idx]) {
+      auto it = local_map.find(neigh);
+      if (it != local_map.end()) {
+        local_graph[local_idx].push_back(it->second);
+      }
     }
   }
 
-  return result;
+  // 转换为无向图以检查弱连通
+  vector<unordered_set<int>> undir(n);
+  for (int i = 0; i < n; ++i) {
+    for (int j : local_graph[i]) {
+      undir[i].insert(j);
+      undir[j].insert(i); // 添加反向边
+    }
+  }
+
+  // BFS检查连通组件
+  vector<bool> visited(n, false);
+  queue<int> q;
+  q.push(0); // 从第一个节点开始
+  visited[0] = true;
+  int count = 1;
+
+  while (!q.empty()) {
+    int u = q.front();
+    q.pop();
+    for (int v : undir[u]) {
+      if (!visited[v]) {
+        visited[v] = true;
+        q.push(v);
+        count++;
+      }
+    }
+  }
+
+  return count == n; // 如果访问了所有节点，则连通
 }
 
 /*<======== 处理文件夹 ========>*/
@@ -213,16 +284,54 @@ void HandleDirectory(string &directory_path, int down_realm, int up_realm,
     if (entry.is_regular_file()) {
       string filename = entry.path().filename().string();
       // 跳过以'module'开头的文件
-      if (filename.find("module")) {
+      if (filename.find("module") == 0) {
         continue;
       }
 
-      // 只处理.json文件，防止文件夹中含有其他类型文件----------------->但是有点问题
-      if (filename.find(".json") == filename.length() - 5) {
+      // 只处理.json文件，防止文件夹中含有其他类型文件
+      if (filename.length() >= 5 &&
+          filename.substr(filename.length() - 5) == ".json") {
         string file_path = entry.path().string();
         cout << "Processing file: " << filename << endl;
         HandleSingleFile(file_path, down_realm, up_realm, ignored_properties);
       }
     }
+  }
+}
+
+/*<======== 辅助函数：从JSON值中提取节点ID ========>*/
+vector<string> ExtractNodeIdsFromJsonValue(const json &value) {
+  vector<string> ids;
+
+  if (value.is_string()) {
+    ExtractNodeIdsFromString(value.get<string>(), ids);
+  } else if (value.is_array()) {
+    ExtractNodeIdsFromArray(value, ids);
+  } else if (value.is_object()) {
+    ExtractNodeIdsFromObject(value, ids);
+  }
+
+  return ids;
+}
+
+void ExtractNodeIdsFromString(const string &str, vector<string> &ids) {
+  for (const string &node_id : id_to_index) {
+    if (str.find(node_id) != string::npos) {
+      ids.push_back(node_id);
+    }
+  }
+}
+
+void ExtractNodeIdsFromArray(const json &arr, vector<string> &ids) {
+  for (const auto &element : arr) {
+    vector<string> element_ids = ExtractNodeIdsFromJsonValue(element);
+    ids.insert(ids.end(), element_ids.begin(), element_ids.end());
+  }
+}
+
+void ExtractNodeIdsFromObject(const json &obj, vector<string> &ids) {
+  for (auto it = obj.begin(); it != obj.end(); ++it) {
+    vector<string> value_ids = ExtractNodeIdsFromJsonValue(it.value());
+    ids.insert(ids.end(), value_ids.begin(), value_ids.end());
   }
 }

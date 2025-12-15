@@ -29,17 +29,25 @@ classfication classify(int argc, char **argv, const string path) {
     return classfication::other;
 }
 
+// 获取需要忽略的属性
+vector<string> GetIgnoredProperties(int argc, char **argv) {
+  vector<string> ignored_properties;
+  for (int index = 4; index < argc; index++)
+    ignored_properties.push_back(argv[index]);
+  return ignored_properties;
+}
+
 // 创建文件名
 string GenerateModuleFilename(const string &origin_filename, int node_count,
                               int module_index,
                               vector<string> &ignored_properties) {
   int dot_pos = origin_filename.find_last_of('.');
   int slash_pos = origin_filename.find_last_of('/');
-  string file_base_dir = origin_filename.substr(0, slash_pos);
+  string file_base_dir = origin_filename.substr(0, slash_pos + 1);
   string basename =
       origin_filename.substr(slash_pos + 1, dot_pos - slash_pos - 1);
   ostringstream output_filename;
-
+  output_filename << file_base_dir;
   // 如果有忽略属性，在文件名中添加标记
   if (!ignored_properties.empty()) {
     output_filename << "module_" << basename;
@@ -83,7 +91,7 @@ void CreateModuleFile(vector<string> &target_id_set, json &j,
 
 // 打印输出图状结构
 void PrintGraph(vector<list<string>> &graph) {
-  cout << "=== Graph Structure ===" << endl;
+  cout << "=== Adj-Graph Sheet ===" << endl;
   for (int i = 0; i < graph.size(); i++) {
     // 获取当前节点的ID
     string current_node_id = id_to_index[i];
@@ -113,4 +121,19 @@ void PrintGraph(vector<vector<int>> &components) {
     }
     cout << "[END]" << endl;
   }
+}
+
+void PrintProgressBar(const int current_step, int total_step) {
+  double progress = (double)current_step / total_step;
+  int complete_blocks = int(progress * 50);
+  int remaining_blocks = 50 - complete_blocks;
+
+  string bar;
+  bar += "[";
+  bar += string(complete_blocks, '#');
+  bar += string(complete_blocks, '.');
+  bar += "]";
+
+  cout << "\r" << bar << " Processing Now...";
+  cout.flush();
 }

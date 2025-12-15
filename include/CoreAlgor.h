@@ -25,9 +25,24 @@ vector<list<string>> Graphicalize(json &j, vector<string> &ignored_properties);
 
 // 寻找自包含子图时需要的主函数和辅助函数
 vector<vector<string>>
-FindConnectedGraph(const vector<list<string>> &graph_str);
-void DFS(int start, const vector<list<int>> &graph,
-         unordered_set<int> &reachable, vector<bool> &visited);
+FindSelfContainedSubgraphs(const vector<list<string>> &graph_str,
+                           int target_size);
 bool IsSelfContained(const unordered_set<int> &subset,
                      const vector<list<int>> &graph);
 vector<list<int>> ConvertGraphToIndices(const vector<list<string>> &graph_str);
+void GenerateCombinations(int start, int n, int k,
+                          vector<int> &current_combination,
+                          const vector<list<int>> &graph,
+                          vector<vector<string>> &result);
+
+// 检查子图连通性
+bool IsConnected(const vector<string> &subgraph_nodes,
+                 const vector<list<string>> &graph_str);
+void CheckConnected(vector<vector<string>> &result,
+                    const vector<list<string>> &graph_str);
+
+/*<======== 辅助函数声明 ========>*/
+vector<string> ExtractNodeIdsFromJsonValue(const json &value);
+void ExtractNodeIdsFromString(const string &str, vector<string> &ids);
+void ExtractNodeIdsFromArray(const json &arr, vector<string> &ids);
+void ExtractNodeIdsFromObject(const json &obj, vector<string> &ids);

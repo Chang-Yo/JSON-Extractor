@@ -8,12 +8,6 @@ using namespace std;
 const string path_base_name = "../";
 
 int main(int argc, char *argv[]) {
-  /*  cout << "===================================================" << endl;
-    cout << "我们已在代码中处理了输入路径问题，请在输入时以*build目录*"
-            "为根目录。从而确定您的输入路径"
-         << endl;
-    cout << "===================================================" << endl;
-  */
   if (argc <= 3) {
     cerr << "Please input the right argument!!" << endl;
     cerr << "<======Example======>" << endl;
@@ -31,42 +25,37 @@ int main(int argc, char *argv[]) {
   string path = full_path;
   int down_realm = stoi(argv[2]);
   int up_realm = stoi(argv[3]);
+  vector<string> ignored_properties = GetIgnoredProperties(argc, argv);
 
   // 根据分类结果来分别处理
   switch (category) {
   case classfication::directory: {
-    cout << "⭐⭐⭐⭐=>Detect the directory: \"" << path << "\"" << endl;
-    vector<string> None;
-    HandleDirectory(path, down_realm, up_realm, None);
+    cout << "✅ ====>Detect the directory: \"" << path << "\"" << endl;
+    HandleDirectory(path, down_realm, up_realm, ignored_properties);
     break;
   }
   case classfication::single_file: {
-    cout << "⭐⭐⭐⭐=>Detect the single file: \"" << path << "\"" << endl;
-    vector<string> None;
-    HandleSingleFile(path, down_realm, up_realm, None);
+    cout << "✅ ====>Detect the single file: \"" << path << "\"" << endl;
+    HandleSingleFile(path, down_realm, up_realm, ignored_properties);
     break;
   }
   case classfication::directory_with_ignored_property: {
-    cout << "⭐⭐⭐⭐=>Detect the directory: \"" << path << "\"" << endl;
-    cout << "⭐⭐⭐⭐=>Also find the extra arguments!" << endl;
-    vector<string> ignored_properties;
-    for (int i = 4; i < argc; i++)
-      ignored_properties.push_back(argv[i]);
+    cout << "✅ ====>Detect the directory: \"" << path << "\"" << endl;
+    cout << "✅ ====>Also find the extra arguments!" << endl;
     HandleDirectory(path, down_realm, up_realm, ignored_properties);
     break;
   }
   case classfication::single_file_with_ignored_property: {
-    cout << "⭐⭐⭐⭐=>Detect the single file: \"" << path << "\"" << endl;
-    cout << "⭐⭐⭐⭐=>Also find the extra arguments!" << endl;
-    vector<string> ignored_properties;
-    for (int i = 4; i < argc; i++)
-      ignored_properties.push_back(argv[i]);
+    cout << "✅ ====>Detect the single file: \"" << path << "\"" << endl;
+    cout << "✅ ====>Also find the extra arguments!" << endl;
     HandleSingleFile(path, down_realm, up_realm, ignored_properties);
     break;
   }
 
   default:
-    cout << "！！！！=>Invalid arguments." << endl;
+    cerr << "🔴 🔴 🔴 ERROR： Invalid arguments！ 🔴 🔴 🔴 " << endl
+         << "====>No file or directory was found named as: " << path << " "
+         << endl;
     break;
   }
   return 0;

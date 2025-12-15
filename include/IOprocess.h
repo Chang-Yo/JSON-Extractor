@@ -30,16 +30,17 @@ enum class classfication {
 
 // 分类器
 classfication classify(int argc, char *argv[], const string path);
-
-// 生成输出文件名
+// 获取需要忽略的属性
+vector<string> GetIgnoredProperties(int argc, char **argv);
+// 生成输出文件名和创建输出文件
 string GenerateModuleFilename(const string &origin_filename, int node_count,
                               int module_index,
                               vector<string> &ignored_properties);
-
-// 创建输出文件
 void CreateModuleFile(vector<string> &, json &, string &);
 
 // 输出图状结构
 void PrintGraph(vector<list<string>> &graph);
 void PrintGraph(vector<vector<string>> &graph);
 void PrintGraph(vector<vector<int>> &graph);
+
+void PrintProgressBar(const int, int);
