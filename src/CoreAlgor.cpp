@@ -62,8 +62,7 @@ void HandleSingleFile(string &file_path, int down_realm, int up_realm,
       break;
       return;
     }
-    // PrintProgressBar(target_size - down_realm + 1, up_realm - down_realm +
-    // 1);
+    // PrintProgressBar(target_size-down_realm + 1, up_realm - down_realm+1);
     vector<vector<string>> subgraphs_of_target_size =
         FindSelfContainedSubgraphs(graph, target_size);
     cout << endl;
@@ -184,31 +183,39 @@ FindSelfContainedSubgraphs(const vector<list<string>> &graph_str,
 }
 
 /*<======== 生成所有组合并检查自包含性 (Iterative & Optimized) ========>*/
-// Optimized to avoid recursion and reduce overhead of set creation
+/**
+ * 采用非递归写法生成所有可能的节点组合，并检查自包含性
+ * 该算法使用组合数学中的字典序生成方法，逐步生成所有k个元素的组合
+ * 对于每个组合，检查是否为自包含子图（所有节点引用都在子图内部）
+ *
+ * @param n 总节点数量
+ * @param k 目标子图大小（节点数量）
+ * @param graph 邻接表表示的图结构（使用整数索引）
+ * @param result 存储所有有效自包含子图的结果集合
+ */
 void GenerateCombinations(int n, int k, const vector<list<int>> &graph,
                           vector<vector<string>> &result) {
   if (k <= 0 || k > n)
     return;
 
-  // 1. Initialize the first combination: {0, 1, ..., k-1}
+  // 初始化集合: {0, 1, ..., k-1}
   vector<int> indices(k);
   std::iota(indices.begin(), indices.end(), 0);
 
-  // Optimization: Use a bool vector for O(1) lookup instead of unordered_set
-  // This avoids the overhead of hashing for every combination check
+  // 使用bool属性的哈希表，加快查找速率
   vector<bool> is_in_subset(n, false);
 
   while (true) {
-    // A. Mark current nodes in the lookup table
+    // 标记当前组合中的所有节点
     for (int idx : indices) {
       is_in_subset[idx] = true;
     }
 
-    // B. Check Self-Contained logic inline for performance
+    // 检查自包含性：所有节点的引用必须在子图内部
     bool self_contained = true;
     for (int u : indices) {
       for (int v : graph[u]) {
-        // If neighbor v is NOT in the current subset, it fails
+        // 如果邻居节点v不在当前子集中，则不满足自包含条件
         if (!is_in_subset[v]) {
           self_contained = false;
           break;
@@ -218,7 +225,7 @@ void GenerateCombinations(int n, int k, const vector<list<int>> &graph,
         break;
     }
 
-    // C. If valid, construct the result
+    // 如果满足自包含条件，构建子图并添加到结果集
     if (self_contained) {
       vector<string> subgraph;
       subgraph.reserve(k);
@@ -228,24 +235,24 @@ void GenerateCombinations(int n, int k, const vector<list<int>> &graph,
       result.push_back(std::move(subgraph));
     }
 
-    // D. Cleanup lookup table for next iteration
-    // (Only reset the ones we set to true to keep it O(K) instead of O(N))
+    // 重置哈希表，只重置被修改的节点
+    // 优化：不必每次都重置所有节点，只重置当前组合中的节点
     for (int idx : indices) {
       is_in_subset[idx] = false;
     }
 
-    // E. Generate Next Combination (Lexicographical)
-    // Find the rightmost element that can be incremented
+    // 生成下一个组合（字典序）
+    // 找到最右边可以递增的元素
     int i = k - 1;
     while (i >= 0 && indices[i] == n - k + i) {
       i--;
     }
 
     if (i < 0)
-      break; // All combinations generated
+      break; // 所有组合已生成完毕
 
-    indices[i]++;
-    // Reset all subsequent indices
+    indices[i]++; // 递增当前位置
+    // 重置所有后续索引
     for (int j = i + 1; j < k; ++j) {
       indices[j] = indices[j - 1] + 1;
     }
@@ -364,9 +371,29 @@ vector<string> ExtractNodeIdsFromJsonValue(const json &value) {
 }
 
 void ExtractNodeIdsFromString(const string &str, vector<string> &ids) {
+  // 如果考虑字符串中包含节点ID作为独立单词的话，请将函数定义替换为以下函数
+  /*for (const string &node_id : id_to_index) {
+    int pos = 0;
+    while ((pos = str.find(node_id, pos)) != string::npos) {
+      // 检查单词边界：前一个字符不是字母数字，或者在字符串开头
+      bool start_boundary = (pos == 0) || !isalnum(str[pos - 1]);
+      // 后一个字符不是字母数字，或者在字符串结尾
+      bool end_boundary = (pos + node_id.length() == str.length()) ||
+                          !isalnum(str[pos + node_id.length()]);
+
+      if (start_boundary && end_boundary) {
+        ids.push_back(node_id);
+        break; // 每个节点ID只添加一次
+      }
+      pos += node_id.length(); // 继续搜索下一个匹配
+    }
+  }*/
+
+  // 如果只对属性的值做精确匹配，不考虑字符串中包含节点ID作为独立单词的话，请将函数定义替换为以下函数
   for (const string &node_id : id_to_index) {
-    if (str.find(node_id) != string::npos) {
+    if (str == node_id) {
       ids.push_back(node_id);
+      break;
     }
   }
 }

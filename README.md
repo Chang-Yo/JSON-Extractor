@@ -1,45 +1,52 @@
 # JSON-Extractor
 任务要求见`request.md`文档，建议安装**mermaid解析拓展**再预览，可以获得更好的可视化体验。
 
+请在运行前**认真阅读**项目目录下的`Note.md`，里面补充了项目的许多**重要提示**！！！
+
 **注意**：输出的`module_XXX.json`文件是**连通**的自包含子图！你可以在`CoreAlgor.cpp`第**182**行添加注释，以此获得包括不连通的自包含子图。
 
 # 项目结构树🌳
 ```plaintext
 workspace
 |
-|-- request.md           //题目详细要求
+|-- request.md           // 题目详细要求
 |
-|-- README.md            //项目介绍
+|-- README.md            // 项目介绍
 |
-|-- CMakeLists.txt       // 环境编译设置
+|-- Note.md              // ！！对项目的重要补充信息！！
 |
-|-- src/                 //存放cpp源代码
+|-- CMakeLists.txt       // 编译环境设置
+|
+|-- src/                 // 存放cpp源代码
 |
 |
-|-- include/             //存放头文件
+|-- include/             // 存放头文件
 |
 |
-|-- test/                //存放测试用例
+|-- test/                // 存放测试用例
 |
 |-- .gitignore
 ```
 
 # 构建项目并编译
 
-建议使用Linux环境来编译文件，如果你使用的是Windows环境，请确保你的编译环境功能和组件完整，包括cmake,ninja,Windows SDKs等等。Mac环境并没有经过编译测试，请自行处理。
+建议使用Linux环境来编译文件.如果你使用的是Windows环境，请确保你的编译环境功能和组件完整，包括cmake,ninja,Windows SDKs等等。Mac环境并没有参与编译测试，请自行妥善处理。
+
+如果出现编译问题，请优先检查你的**环境组件**是否确认完整！
 
 ## Linux环境
 编译器要求：GNU toolchain / llvm toolchain
 
-1. 创建`build`文件夹并生成`makefile`
-    ```bash
-    mkdir build && cd build # 如果build文件夹已存在可以直接 cd build
-    cmake ..
-    ```
-2. 开始编译
-    ```bash
-    make
-    ```
+创建`build`文件夹并生成`makefile`
+    
+```bash
+mkdir build && cd build # 如果build文件夹已存在可以直接 cd build
+cmake ..
+```
+开始编译
+```bash
+make
+```
 
 ## Windows环境
 
@@ -107,4 +114,10 @@ cd build && ninja
 
 你可以直接设置断点，然后按下`F5`，即可开始调试；或者你也可以通过 CMake Tools 的 Debug 功能来调试来调试。
 
-联系作者：[Zhixi Hu](mailto:running_stream@sjtu.edu.cn)
+作者：[Zhixi Hu](https://github.com/Chang-Yo)
+
+邮箱：[running_stream@sjtu.edu.cn](mailto:running_stream@sjtu.edu.cn)
+
+如果有问题欢迎随时联系。
+
+（为什么文档写这么多？只是想把项目做完美一些，而且，代码跑不了真的不一定是我的代码有BUG....）
