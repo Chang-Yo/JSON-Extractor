@@ -131,7 +131,7 @@ void PrintProgressBar(const int current_step, int total_step) {
   string bar;
   bar += "[";
   bar += string(complete_blocks, '#');
-  bar += string(complete_blocks, '.');
+  bar += string(remaining_blocks, '.');
   bar += "]";
 
   cout << "\r" << bar << " Processing Now...";

@@ -1,5 +1,5 @@
 # JSON-Extractor
-任务要求见`request.md`文档，建议使用能够**支持mermaid解析**的markdown预览工具来预览。
+任务要求见`request.md`文档，建议安装**mermaid解析拓展**再预览，可以获得更好的可视化体验。
 
 **注意**：输出的`module_XXX.json`文件是**连通**的自包含子图！你可以在`CoreAlgor.cpp`第**182**行添加注释，以此获得包括不连通的自包含子图。
 
@@ -24,49 +24,87 @@ workspace
 |-- .gitignore
 ```
 
-# 环境准备
+# 构建项目并编译
 
-建议使用Linux环境，如果你使用的是Windows环境，请自行配置`launch.json`文件。
+建议使用Linux环境来编译文件，如果你使用的是Windows环境，请确保你的编译环境功能和组件完整，包括cmake,ninja,Windows SDKs等等。Mac环境并没有经过编译测试，请自行处理。
 
-推荐环境：GNU toolchain / llvm toolchain 
+## Linux环境
+编译器要求：GNU toolchain / llvm toolchain
 
-# 如何开始
-1. 将仓库克隆到本地，在项目目录下运行以下命令:
-
+1. 创建`build`文件夹并生成`makefile`
     ```bash
-    mkdir build && cd build 
+    mkdir build && cd build # 如果build文件夹已存在可以直接 cd build
+    cmake ..
     ```
-2. 开始构建并编译项目:
-
+2. 开始编译
     ```bash
-    cmake .. && make
-    ```
-
-    如果你想使用llvm工具链，请输入：
-
-    ```bash
-    cmake -D CMAKE_CXX_COMPILER=clang++ && make
+    make
     ```
 
-3. 运行项目:
+## Windows环境
 
-    ！！！请确保您当前在`build/`目录下！！！
+编译器推荐：MinGW / Clang / MVSC
 
-    如果不在`build/`下执行，请**自行确定**文件路径。
+### 使用 MinGW （推荐）
+MinGW 的使用体验和Linux环境基本一致，因为调用的是GCC.
+```shell
+mkdir build && cd build && cmake .. 
+```
+同样可以发现生成了`Makefile`，直接编译
+```shell
+make
+```
 
-    ```bash
-    ./tool path/to/or/directory down_realm up_realm [Optional:Serveral-Ignored-Properties]
-    ```
+### 使用 Clang
+依然是创建并进入build文件夹
+```shell
+mkdir build && cd build && cmake .. 
+```
+会发现build下含有`build.ninja`文件，我们通过ninja来构建（请确保系统含有ninja）
+```shell
+ninja
+```
+编译结束即可发现`tool.exe`可执行文件
 
-    或者你可以直接按下`F5`来运行，该调试默认调用`tool`的指令为：
-    ```bash
-    ./tool test/test.json 5 6
-    ```
+### 使用 MVSC
+由于MVSC并不会自动读取环境变量，我们推荐在**x64 Native Tools Command Prompt for VS**中来编译项目。
 
-4. 如何调试
-   
-    你可以直接设置断点，然后按下`F5`，即可开始调试。
+首先找到电脑上的**x64 Native Tools Command Prompt for VS**程序，然后进入所在项目目录：
+```bash
+cd /D path/to/your/project/workspace
+```
+然后指定使用Ninja来构建：
+```bash
+# rmdir /s /q build  # 删除已存在的文件夹（可选）
+cmake -G Ninja -B build .
+```
+然后同样启动ninja来编译：
+```bash
+cd build && ninja
+```
 
-**注意**：在调试之前请先选择好您的调试器，在"Run and Debug"下拉菜单中选择GDB调试器或LLDB调试器。如果你没有安装LLDB,请选择GDB调试，或者你也可以通过 CMake Tools 来调试。
+# 运行项目:
+
+！！！请确保终端环境当前在`build/`目录下！！！
+
+如果不在`build/`下执行，请`cd build`进入build环境。
+
+`tool`调用规则及可接收参数：
+
+```bash
+./tool path/to/or/directory down_realm up_realm [Optional:Serveral-Ignored-Properties]
+```
+
+如果使用的是VSCode，你可以在 Run and Debug 中来调试，项目在`launch.json`中提供了`LLDB`和`GDB`两种调试器配置。
+
+调试默认终端输入路径为`WorkspaceFolder/build/`，默认输入参数为：
+
+```bash
+./tool test/test.json 5 6
+```
+
+# 如何调试
+
+你可以直接设置断点，然后按下`F5`，即可开始调试；或者你也可以通过 CMake Tools 的 Debug 功能来调试来调试。
 
 联系作者：[Zhixi Hu](mailto:running_stream@sjtu.edu.cn)

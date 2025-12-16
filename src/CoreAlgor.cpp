@@ -150,7 +150,7 @@ bool IsSelfContained(const unordered_set<int> &subset,
 // 化为整数可以提高运行效率
 vector<list<int>> ConvertGraphToIndices(const vector<list<string>> &graph_str) {
   vector<list<int>> graph(graph_str.size());
-  for (size_t i = 0; i < graph_str.size(); i++) {
+  for (int i = 0; i < graph_str.size(); i++) {
     for (const string &neighbor_id : graph_str[i]) {
       auto it = id_map.find(neighbor_id);
       if (it != id_map.end()) {
