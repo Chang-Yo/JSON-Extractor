@@ -1,0 +1,194 @@
+[
+    {
+        "id": "tab1",
+        "type": "tab",
+        "label": "Complex Flow"
+    },
+    {
+        "id": "inject1",
+        "type": "inject",
+        "z": "tab1",
+        "wires": [
+            [
+                "split1"
+            ]
+        ]
+    },
+    {
+        "id": "split1",
+        "type": "split",
+        "z": "tab1",
+        "wires": [
+            [
+                "func1"
+            ],
+            [
+                "func2"
+            ],
+            [
+                "func3"
+            ]
+        ]
+    },
+    {
+        "id": "func1",
+        "type": "function",
+        "z": "tab1",
+        "wires": [
+            [
+                "join1"
+            ]
+        ]
+    },
+    {
+        "id": "func2",
+        "type": "function",
+        "z": "tab1",
+        "wires": [
+            [
+                "join1"
+            ]
+        ]
+    },
+    {
+        "id": "func3",
+        "type": "function",
+        "z": "tab1",
+        "wires": [
+            [
+                "join1"
+            ]
+        ]
+    },
+    {
+        "id": "join1",
+        "type": "join",
+        "z": "tab1",
+        "wires": [
+            [
+                "switch1"
+            ]
+        ]
+    },
+    {
+        "id": "switch1",
+        "type": "switch",
+        "z": "tab1",
+        "wires": [
+            [
+                "case1"
+            ],
+            [
+                "case2"
+            ],
+            [
+                "case3"
+            ]
+        ]
+    },
+    {
+        "id": "case1",
+        "type": "function",
+        "z": "tab1",
+        "wires": [
+            [
+                "debug1"
+            ]
+        ]
+    },
+    {
+        "id": "case2",
+        "type": "function",
+        "z": "tab1",
+        "wires": [
+            [
+                "debug2"
+            ]
+        ]
+    },
+    {
+        "id": "case3",
+        "type": "function",
+        "z": "tab1",
+        "wires": [
+            [
+                "debug3"
+            ]
+        ]
+    },
+    {
+        "id": "debug1",
+        "type": "debug",
+        "z": "tab1"
+    },
+    {
+        "id": "debug2",
+        "type": "debug",
+        "z": "tab1"
+    },
+    {
+        "id": "debug3",
+        "type": "debug",
+        "z": "tab1"
+    },
+    {
+        "id": "inject2",
+        "type": "inject",
+        "z": "tab1",
+        "wires": [
+            [
+                "http1"
+            ]
+        ]
+    },
+    {
+        "id": "http1",
+        "type": "http in",
+        "z": "tab1",
+        "wires": [
+            [
+                "function4"
+            ]
+        ]
+    },
+    {
+        "id": "function4",
+        "type": "function",
+        "z": "tab1",
+        "wires": [
+            [
+                "http2"
+            ]
+        ]
+    },
+    {
+        "id": "http2",
+        "type": "http out",
+        "z": "tab1"
+    },
+    {
+        "id": "mqtt1",
+        "type": "mqtt in",
+        "z": "tab1",
+        "wires": [
+            [
+                "function5"
+            ]
+        ]
+    },
+    {
+        "id": "function5",
+        "type": "function",
+        "z": "tab1",
+        "wires": [
+            [
+                "debug4"
+            ]
+        ]
+    },
+    {
+        "id": "debug4",
+        "type": "debug",
+        "z": "tab1"
+    }
+]

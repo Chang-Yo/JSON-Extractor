@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-// 分类器
+/*<======== 分类器 ========>*/
 classfication classify(int argc, char **argv, const string path) {
   if (argc < 4)
     return classfication::other;
@@ -29,7 +29,7 @@ classfication classify(int argc, char **argv, const string path) {
     return classfication::other;
 }
 
-// 获取需要忽略的属性
+/*<======== 获取忽略属性 ========>*/
 vector<string> GetIgnoredProperties(int argc, char **argv) {
   vector<string> ignored_properties;
   for (int index = 4; index < argc; index++)
@@ -37,7 +37,7 @@ vector<string> GetIgnoredProperties(int argc, char **argv) {
   return ignored_properties;
 }
 
-// 创建文件名
+/*<======== 生成子模块文件名 ========>*/
 string GenerateModuleFilename(const string &origin_filename, int node_count,
                               int module_index,
                               vector<string> &ignored_properties) {
@@ -64,7 +64,7 @@ string GenerateModuleFilename(const string &origin_filename, int node_count,
   return output_filename.str();
 }
 
-// 创建并写入输出文件
+/*<======== 写入文件 ========>*/
 void CreateModuleFile(vector<string> &target_id_set, json &j,
                       string &output_file_name) {
   json output_array = json::array();
@@ -89,7 +89,7 @@ void CreateModuleFile(vector<string> &target_id_set, json &j,
   return;
 }
 
-// 打印输出图状结构
+/*<======== 打印出邻接表 ========>*/
 void PrintGraph(vector<list<string>> &graph) {
   cout << "=== Adj-Graph Sheet ===" << endl;
   for (int i = 0; i < graph.size(); i++) {

@@ -1,0 +1,37 @@
+[
+    {
+        "id": "single",
+        "type": "inject",
+        "wires": []
+    },
+    {
+        "id": "isolated1",
+        "type": "function"
+    },
+    {
+        "id": "isolated2",
+        "type": "debug"
+    },
+    {
+        "id": "pair1",
+        "type": "inject",
+        "wires": [
+            [
+                "pair2"
+            ]
+        ]
+    },
+    {
+        "id": "pair2",
+        "type": "debug"
+    },
+    {
+        "id": "self_loop",
+        "type": "function",
+        "wires": [
+            [
+                "self_loop"
+            ]
+        ]
+    }
+]

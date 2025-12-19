@@ -280,13 +280,13 @@ graph LR
     end
 
     subgraph  Undirected
-    G -- z --- A 
-    G -- z --- B
-    G -- z --- C
-    G -- z --- H
-    G -- z --- D
-    G -- z --- E
-    G -- z --- F
+    G -- z ---> A 
+    G -- z ---> B
+    G -- z ---> C
+    G -- z ---> H
+    G -- z ---> D
+    G -- z ---> E
+    G -- z ---> F
     end
 
     subgraph  

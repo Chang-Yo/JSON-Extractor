@@ -1,0 +1,29 @@
+[
+    {
+        "id": "first"
+    },
+    {
+        "id": "second",
+        "wires": [
+            [
+                "three"
+            ]
+        ]
+    },
+    {
+        "id": "three",
+        "wires": [
+            [
+                "second",
+                "first"
+            ]
+        ]
+    },
+    {
+        "id": "four"
+    },
+    {
+        "id": "five",
+        "z": "first"
+    }
+]

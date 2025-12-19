@@ -1,0 +1,24 @@
+[
+    {
+        "id": "inject1",
+        "type": "inject",
+        "wires": [
+            [
+                "func1"
+            ]
+        ]
+    },
+    {
+        "id": "func1",
+        "type": "function",
+        "wires": [
+            [
+                "debug1"
+            ]
+        ]
+    },
+    {
+        "id": "debug1",
+        "type": "debug"
+    }
+]

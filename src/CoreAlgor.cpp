@@ -74,7 +74,7 @@ void HandleSingleFile(string &file_path, int down_realm, int up_realm,
     }
 
     if (!index) { // 如果没有找到对应大小的子图
-      cout << " 🟨 🟨 ===>ATTENTION: We couldn't find thesubgraphs with size "
+      cout << " 🟨 🟨 ===>ATTENTION: We couldn't find the subgraphs with size "
               "of [ "
            << target_size << " ] !" << endl;
     }

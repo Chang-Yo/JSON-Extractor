@@ -1,0 +1,17 @@
+[
+    {
+        "id": "first",
+        "wires": "second"
+    },
+    {
+        "id": "second",
+        "wires": "first"
+    },
+    {
+        "id": "three",
+        "z": "four"
+    },
+    {
+        "id": "four"
+    }
+]
