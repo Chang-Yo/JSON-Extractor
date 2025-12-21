@@ -114,8 +114,9 @@ cd build && ninja
 
 ## 如何调试
 
-你可以直接设置断点，然后按下`F5`，即可开始调试；或者你也可以通过 CMake Tools 的 Debug 功能来调试来调试。
+你可以设置断点开始调试；或者你也可以通过 CMake Tools 的 Debug 功能来调试来调试。
 
+请在调试前将`.vscode/`目录下的配置文件自行妥善完善。
 
 # 核心工作流程
 
@@ -129,5 +130,7 @@ cd build && ninja
 邮箱：[running_stream@sjtu.edu.cn](mailto:running_stream@sjtu.edu.cn)
 
 如果有问题欢迎随时联系。
+
+本项目主要代码托管在[GitHub平台](https://github.com/Chang-Yo/JSON-Extractor)，遵循 [Apache-2.0](/LICENSE) 开源协议。
 
 （为什么文档写这么多？只是想把项目做完美一些，而且，代码跑不了真的不一定是我的代码有BUG....）
