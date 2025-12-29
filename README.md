@@ -101,7 +101,7 @@ cd build && ninja
 `tool`调用规则及可接收参数：
 
 ```bash
-./tool path/to/or/directory down_realm up_realm [Optional:Serveral-Ignored-Properties]
+./tool path/to/file/or/directory down_realm up_realm [Optional:Serveral-Ignored-Properties]
 ```
 
 如果使用的是VSCode，你可以在 Run and Debug 中来调试，项目在`launch.json`中提供了`LLDB`和`GDB`两种调试器配置。
