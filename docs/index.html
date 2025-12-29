@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON-Extractor - 智能JSON子图提取工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2d5a27;
+            --secondary-color: #4a8c3f;
+            --accent-color: #7cb860;
+            --bg-color: #f8faf8;
+            --card-bg: #ffffff;
+            --text-primary: #1a2e1a;
+            --text-secondary: #4a5d4a;
+            --border-color: #e0e8e0;
+            --code-bg: #f0f4f0;
+            --success-color: #4a8c3f;
+            --error-color: #c94040;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='%23ffffff' fill-opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 36px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .tagline {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 32px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        /* Section */
+        section {
+            margin-bottom: 60px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--code-bg);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        /* Cards */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 28px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(45, 90, 39, 0.1);
+        }
+
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--secondary-color) 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            font-size: 1.25em;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+        }
+
+        /* Code Block */
+        .code-block {
+            background: var(--code-bg);
+            border-radius: 12px;
+            padding: 24px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9em;
+            line-height: 1.7;
+            position: relative;
+        }
+
+        .code-block pre {
+            margin: 0;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-lang {
+            font-size: 0.8em;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--border-color);
+        }
+
+        .comment { color: #6a9955; }
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .number { color: #b5cea8; }
+        .function { color: #dcdcaa; }
+
+        /* Usage Steps */
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .step {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            width: 44px;
+            height: 44px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+        }
+
+        /* Example Section */
+        .example-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .example-tabs {
+            display: flex;
+            background: var(--code-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .example-tab {
+            padding: 16px 24px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border: none;
+            background: none;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+
+        .example-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .example-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background: var(--card-bg);
+        }
+
+        .example-content {
+            padding: 24px;
+        }
+
+        .example-json {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.85em;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Output Section */
+        .output-section {
+            background: #f0fdf4;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .output-title {
+            font-weight: 600;
+            color: var(--success-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .footer-copyright {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .header-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 280px;
+                justify-content: center;
+            }
+
+            section {
+                margin-bottom: 40px;
+            }
+
+            .step {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        /* Diagram */
+        .diagram-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 32px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .diagram-svg {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">{ }</div>
+            <h1>JSON-Extractor</h1>
+            <p class="tagline">智能 JSON 子图提取工具 - 从复杂 JSON 依赖图中提取自包含子模块</p>
+            <div class="header-buttons">
+                <a href="https://github.com/Chang-Yo/JSON-Extractor" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                    </svg>
+                    查看源码
+                </a>
+                <a href="#usage" class="btn btn-secondary">开始使用</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="animate-in">
+            <h2 class="section-title">
+                <span class="section-icon">{ }</span>
+                功能特性
+            </h2>
+            <div class="feature-grid">
+                <div class="card">
+                    <div class="card-icon">🔍</div>
+                    <h3>智能节点分析</h3>
+                    <p>自动识别 JSON 文件中的节点依赖关系，通过 wires 和属性引用构建完整的依赖图。</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📦</div>
+                    <h3>子图提取</h3>
+                    <p>根据指定的节点数量范围，精确提取所有满足条件的自包含子图模块。</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⚙️</div>
+                    <h3>灵活配置</h3>
+                    <p>支持忽略特定属性（如 z 属性），自定义连接关系的判定规则。</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📁</div>
+                    <h3>批量处理</h3>
+                    <p>支持单文件处理和目录批量处理，自动遍历所有 JSON 文件并生成模块文件。</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔗</div>
+                    <h3>连通性检查</h3>
+                    <p>可选的弱连通性检查，确保提取的子图是连通的整体模块。</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🚀</div>
+                    <h3>高性能</h3>
+                    <p>基于 C++ 实现，采用优化的组合算法，支持大规模 JSON 文件的高效处理。</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="animate-in" style="animation-delay: 0.1s;">
+            <h2 class="section-title">
+                <span class="section-icon">⚡</span>
+                快速开始
+            </h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>克隆项目</h4>
+                        <p>从 GitHub 克隆项目到本地环境。</p>
+                    </div>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Bash</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre>git clone https://github.com/Chang-Yo/JSON-Extractor.git
+cd JSON-Extractor</pre>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>编译项目</h4>
+                        <p>创建 build 目录并编译生成可执行文件。</p>
+                    </div>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Bash</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre>mkdir build && cd build
+cmake ..
+make</pre>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>运行工具</h4>
+                        <p>在 build 目录下执行工具，处理 JSON 文件或目录。</p>
+                    </div>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Bash</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre>./tool path/to/file.json 5 6</pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="animate-in" style="animation-delay: 0.2s;">
+            <h2 class="section-title">
+                <span class="section-icon">📖</span>
+                使用方法
+            </h2>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Usage</span>
+                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                </div>
+                <pre>./tool path/to/file_or_directory down_realm up_realm [Optional:Serveral-Ignored-Properties]</pre>
+            </div>
+
+            <div style="margin-top: 24px;">
+                <div class="card" style="margin-bottom: 16px;">
+                    <h3 style="margin-bottom: 16px; color: var(--primary-color);">参数说明</h3>
+                    <div style="display: grid; gap: 12px;">
+                        <div style="display: grid; grid-template-columns: 120px 1fr; gap: 16px; align-items: start;">
+                            <code style="background: var(--code-bg); padding: 4px 8px; border-radius: 4px;">path/to/file</code>
+                            <span>输入的 JSON 文件路径或包含 JSON 文件的目录路径（相对于项目根目录）</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 120px 1fr; gap: 16px; align-items: start;">
+                            <code style="background: var(--code-bg); padding: 4px 8px; border-radius: 4px;">down_realm</code>
+                            <span>提取子图的节点数量下界（包含）</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 120px 1fr; gap: 16px; align-items: start;">
+                            <code style="background: var(--code-bg); padding: 4px 8px; border-radius: 4px;">up_realm</code>
+                            <span>提取子图的节点数量上界（包含）</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 120px 1fr; gap: 16px; align-items: start;">
+                            <code style="background: var(--code-bg); padding: 4px 8px; border-radius: 4px;">ignored_properties</code>
+                            <span>可选参数，指定在构建连接关系时需要忽略的属性名，多个属性用空格分隔</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 24px;">
+                <h3 style="margin-bottom: 16px; color: var(--text-primary);">使用示例</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Examples</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre># 处理单个文件，提取5-6个节点的子图
+./tool test/test.json 5 6
+
+# 处理目录，提取3-4个节点的子图
+./tool test 3 4
+
+# 处理文件，忽略 z 属性
+./tool test/test.json 5 6 z
+
+# 处理目录，忽略 z 和 wires 属性
+./tool test 5 6 z wires</pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="animate-in" style="animation-delay: 0.3s;">
+            <h2 class="section-title">
+                <span class="section-icon">💡</span>
+                示例演示
+            </h2>
+            <div class="example-container">
+                <div class="example-tabs">
+                    <button class="example-tab active" onclick="switchTab(this, 'input')">输入 JSON</button>
+                    <button class="example-tab" onclick="switchTab(this, 'output')">输出模块</button>
+                </div>
+                <div class="example-content">
+                    <div id="input-tab" class="example-tab-content">
+                        <div class="example-json">[
+    {
+        "id": "135c4e7649611314",
+        "type": "tab",
+        "label": "PowerSaver"
+    },
+    {
+        "id": "cf5908a52e0aee5e",
+        "type": "ps-receive-price",
+        "z": "135c4e7649611314",
+        "name": "Price Receiver",
+        "x": 400,
+        "y": 320,
+        "wires": [["b7b85590b7d28ba6"]]
+    },
+    {
+        "id": "b08bc12bf8734c5a",
+        "type": "tibber-query",
+        "z": "135c4e7649611314",
+        "x": 230,
+        "y": 320,
+        "wires": [["cf5908a52e0aee5e"]]
+    },
+    {
+        "id": "027f4267d969e1b8",
+        "type": "server-state-changed",
+        "z": "135c4e7649611314",
+        "x": 420,
+        "y": 360,
+        "wires": [["b7b85590b7d28ba6"]]
+    },
+    {
+        "id": "b7b85590b7d28ba6",
+        "type": "ps-strategy-heat-capacitor",
+        "z": "135c4e7649611314",
+        "x": 600,
+        "y": 320,
+        "wires": [["2b7cbdef3203a482"], [], []]
+    },
+    {
+        "id": "2b7cbdef3203a482",
+        "type": "function",
+        "z": "135c4e7649611314",
+        "x": 800,
+        "y": 320,
+        "wires": [["4831f393a0066565"]]
+    },
+    {
+        "id": "4831f393a0066565",
+        "type": "api-call-service",
+        "z": "135c4e7649611314",
+        "x": 980,
+        "y": 320,
+        "wires": [[]]
+    }
+]</div>
+                    </div>
+                    <div id="output-tab" class="example-tab-content" style="display: none;">
+                        <div class="output-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            module_test_5_1.json（提取的5节点子图）
+                        </div>
+                        <div class="example-json">[
+    {
+        "id": "135c4e7649611314",
+        "type": "tab",
+        "label": "PowerSaver"
+    },
+    {
+        "id": "4831f393a0066565",
+        "type": "api-call-service",
+        "z": "135c4e7649611314",
+        "wires": [[]]
+    },
+    {
+        "id": "027f4267d969e1b8",
+        "type": "server-state-changed",
+        "z": "135c4e7649611314",
+        "wires": [["b7b85590b7d28ba6"]]
+    },
+    {
+        "id": "b7b85590b7d28ba6",
+        "type": "ps-strategy-heat-capacitor",
+        "z": "135c4e7649611314",
+        "wires": [["2b7cbdef3203a482"], [], []]
+    },
+    {
+        "id": "2b7cbdef3203a482",
+        "type": "function",
+        "z": "135c4e7649611314",
+        "wires": [["4831f393a0066565"]]
+    }
+]</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="animate-in" style="animation-delay: 0.4s;">
+            <h2 class="section-title">
+                <span class="section-icon">🏗️</span>
+                工作流程
+            </h2>
+            <div class="diagram-container">
+                <svg class="diagram-svg" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 输入阶段 -->
+                    <rect x="20" y="150" width="140" height="100" rx="12" fill="#e8f5e9" stroke="#4a8c3f" stroke-width="2"/>
+                    <text x="90" y="185" text-anchor="middle" font-size="14" font-weight="600" fill="#2d5a27">输入 JSON</text>
+                    <text x="90" y="205" text-anchor="middle" font-size="12" fill="#4a5d4a">文件/目录</text>
+                    <text x="90" y="225" text-anchor="middle" font-size="11" fill="#6a7a6a">*.json</text>
+
+                    <!-- 箭头1 -->
+                    <path d="M160 200 L220 200" stroke="#4a8c3f" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                    <!-- 解析阶段 -->
+                    <rect x="230" y="150" width="140" height="100" rx="12" fill="#e8f5e9" stroke="#4a8c3f" stroke-width="2"/>
+                    <text x="300" y="185" text-anchor="middle" font-size="14" font-weight="600" fill="#2d5a27">节点分析</text>
+                    <text x="300" y="205" text-anchor="middle" font-size="12" fill="#4a5d4a">构建依赖图</text>
+                    <text x="300" y="225" text-anchor="middle" font-size="11" fill="#6a7a6a">ID 映射</text>
+
+                    <!-- 箭头2 -->
+                    <path d="M370 200 L430 200" stroke="#4a8c3f" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                    <!-- 提取阶段 -->
+                    <rect x="440" y="150" width="140" height="100" rx="12" fill="#e8f5e9" stroke="#4a8c3f" stroke-width="2"/>
+                    <text x="510" y="185" text-anchor="middle" font-size="14" font-weight="600" fill="#2d5a27">子图提取</text>
+                    <text x="510" y="205" text-anchor="middle" font-size="12" fill="#4a5d4a">组合算法</text>
+                    <text x="510" y="225" text-anchor="middle" font-size="11" fill="#6a7a6a">自包含检查</text>
+
+                    <!-- 箭头3 -->
+                    <path d="M580 200 L640 200" stroke="#4a8c3f" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                    <!-- 输出阶段 -->
+                    <rect x="650" y="150" width="130" height="100" rx="12" fill="#e8f5e9" stroke="#4a8c3f" stroke-width="2"/>
+                    <text x="715" y="185" text-anchor="middle" font-size="14" font-weight="600" fill="#2d5a27">模块输出</text>
+                    <text x="715" y="205" text-anchor="middle" font-size="12" fill="#4a5d4a">生成文件</text>
+                    <text x="715" y="225" text-anchor="middle" font-size="11" fill="#6a7a6a">module_*.json</text>
+
+                    <!-- 参数标签 -->
+                    <rect x="200" y="50" width="100" height="30" rx="6" fill="#fff3e0" stroke="#ff9800" stroke-width="1"/>
+                    <text x="250" y="70" text-anchor="middle" font-size="12" fill="#e65100">down/up realm</text>
+
+                    <rect x="410" y="50" width="100" height="30" rx="6" fill="#fff3e0" stroke="#ff9800" stroke-width="1"/>
+                    <text x="460" y="70" text-anchor="middle" font-size="12" fill="#e65100">ignored props</text>
+
+                    <!-- 参数箭头 -->
+                    <path d="M250 80 L300 130" stroke="#ff9800" stroke-width="1.5" stroke-dasharray="4"/>
+                    <path d="M460 80 L510 130" stroke="#ff9800" stroke-width="1.5" stroke-dasharray="4"/>
+
+                    <!-- 定义箭头标记 -->
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#4a8c3f"/>
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+        </section>
+
+        <section class="animate-in" style="animation-delay: 0.5s;">
+            <h2 class="section-title">
+                <span class="section-icon">🛠️</span>
+                技术栈
+            </h2>
+            <div class="feature-grid">
+                <div class="card">
+                    <div class="card-icon">C++</div>
+                    <h3>C++17</h3>
+                    <p>使用现代 C++ 特性开发，包括 STL 容器、智能指针和函数式编程。</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📚</div>
+                    <h3>nlohmann/json</h3>
+                    <p>使用 header-only JSON 库进行 JSON 解析和处理。</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔧</div>
+                    <h3>CMake</h3>
+                    <p>使用 CMake 进行项目构建管理，支持多种编译器。</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://github.com/Chang-Yo/JSON-Extractor">GitHub</a>
+                <a href="https://github.com/Chang-Yo/JSON-Extractor/issues">问题反馈</a>
+                <a href="mailto:running_stream@sjtu.edu.cn">联系我们</a>
+            </div>
+            <p class="footer-copyright">
+                JSON-Extractor © 2024 <a href="https://github.com/Chang-Yo" style="color: var(--primary-color);">Zhixi Hu</a>.
+                开源协议: Apache-2.0
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Tab switching for examples
+        function switchTab(button, tabName) {
+            const container = button.closest('.example-container');
+            const tabs = container.querySelectorAll('.example-tab');
+            const contents = container.querySelectorAll('.example-tab-content');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.style.display = 'none');
+
+            button.classList.add('active');
+            document.getElementById(tabName + '-tab').style.display = 'block';
+        }
+
+        // Copy code functionality
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-block');
+            const code = codeBlock.querySelector('pre').textContent;
+
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '已复制';
+                button.style.color = '#4a8c3f';
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.color = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>
